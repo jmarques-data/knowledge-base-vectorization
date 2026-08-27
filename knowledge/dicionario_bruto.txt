@@ -1,0 +1,17 @@
+DICIONÁRIO DE DADOS
+Tabela Módulo
+T
+Schema: dbo
+tb_usuarios
+Coluna Tipo Req. Chave
+id int SIM PK
+nome varchar(100) SIM
+email varchar(150) SIM
+status bit NAO
+
+Schema: dbo
+tb_logs
+Coluna Tipo Req. Chave
+id bigint SIM PK
+data datetime SIM
+mensagem text NAO

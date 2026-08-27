@@ -1,0 +1,39 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Private data / Real data (MUST NOT BE COMMITTED)
+TICKETS/
+PROCEDIMENTOS/
+REGRAS_NEGOCIO/
+vector_db/
+!README.md
+!knowledge/**/*.md
+
+# Temporary or local generated files
+knowledge/002_SGV_KnowledgeBase_Consolidada.md
+knowledge/000_Dicionario_Oficial.md
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Private and temporary files
+private/
+out*.txt
+test.txt
