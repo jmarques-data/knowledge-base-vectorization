@@ -1,3 +1,18 @@
+<p align="center">
+  <img src="docs/banner.png" alt="Knowledge Base Vectorization" width="100%">
+</p>
+
+<p align="center">
+  <a href="README.md">🇺🇸 English</a> · <b>🇧🇷 Português</b>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-8b5cf6" alt="Python">
+  <img src="https://img.shields.io/badge/ChromaDB-vector%20DB-4f8cff" alt="ChromaDB">
+  <img src="https://img.shields.io/badge/status-em%20desenvolvimento-c4b5fd" alt="Status">
+  <img src="https://img.shields.io/badge/license-MIT-86e3bf" alt="MIT license">
+</p>
+
 # Knowledge Base — Pipeline de Ingestão e Vetorização de Dados
 
 Pipeline desenvolvido em Python para transformar documentação técnica e tickets de suporte em representações vetoriais pesquisáveis, utilizando o ChromaDB como banco de dados vetorial local.
@@ -119,32 +134,33 @@ O banco vetorial é gerado localmente durante a execução e não faz parte do r
 ## Estrutura do projeto
 
 ```text
-project/
+knowledge-base-vectorization/
 │
-├── knowledge/
-│   ├── tickets/
-│   │   ├── ticket_7777_ssl_expired.md
-│   │   ├── ticket_8834_db_lock.md
-│   │   └── ticket_9912_camera_offline.md
-│   │
-│   ├── 000_Dicionario_Oficial.md
+├── docs/
+│   └── banner.png
+│
+├── knowledge/                          # documentos sintéticos de origem
 │   ├── 001_Troubleshooting_SGV_Limpo.md
-│   └── dicionario_bruto.txt
+│   ├── dicionario_bruto.txt
+│   ├── 000_Dicionario_Oficial.md       # gerado por estruturar_dicionario.py (não versionado)
+│   └── tickets/                        # gerado por sanitizar_tickets.py (não versionado)
 │
 ├── scripts/
-│   ├── estruturar_dicionario.py
-│   ├── preparar_scripts_sql.py
-│   └── sanitizar_tickets.py
+│   ├── estruturar_dicionario.py        # dicionário bruto → Markdown estruturado
+│   ├── preparar_scripts_sql.py         # cabeçalho + UTF-8 nos scripts SQL      
+│   ├── sanitizar_tickets.py            # remove campos sensíveis dos tickets
+│   └── teste_busca.py                  # teste rápido de busca semântica
 │
 ├── src/
 │   └── ingestion/
-│       └── vetorizar_base.py
+│       └── vetorizar_base.py           # chunking + embeddings + ChromaDB
 │
 ├── tests/
-│
 ├── .env.example
 ├── .gitignore
+├── LICENSE
 ├── README.md
+├── README.pt-BR.md
 └── requirements.txt
 ```
 
@@ -155,8 +171,8 @@ project/
 ### 1. Clone o repositório
 
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/jmarques-data/knowledge-base-vectorization.git
+cd knowledge-base-vectorization
 ```
 
 ### 2. Crie um ambiente virtual
@@ -254,6 +270,16 @@ ChromaDB
 O diretório `vector_db/` será criado localmente durante a execução.
 
 Esse diretório é um artefato gerado e está configurado no `.gitignore`.
+
+### 3. Teste rápido de busca
+
+Depois da vetorização, rode uma consulta de exemplo no ChromaDB:
+
+```bash
+python scripts/teste_busca.py
+```
+
+O script busca uma pergunta de troubleshooting de exemplo e mostra o trecho mais próximo, a distância e os metadados. É uma validação simples, ainda não uma camada completa de busca.
 
 ---
 
@@ -455,3 +481,9 @@ O objetivo é evoluir o projeto gradualmente, validando cada camada antes de adi
 * [ ] Hybrid Retrieval
 * [ ] Agente de IA
 * [ ] Testes automatizados
+
+---
+
+## Licença
+
+Distribuído sob a [licença MIT](LICENSE).
