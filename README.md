@@ -147,7 +147,7 @@ knowledge-base-vectorization/
 │
 ├── scripts/
 │   ├── estruturar_dicionario.py        # raw dictionary → structured Markdown
-│   ├── preparar_scripts_sql.py         # normalizes SQL script encoding
+│   ├── preparar_scripts_sql.py         # adds headers + UTF-8 to SQL scripts
 │   ├── sanitizar_tickets.py            # removes sensitive fields from tickets
 │   └── teste_busca.py                  # quick semantic search test
 │
