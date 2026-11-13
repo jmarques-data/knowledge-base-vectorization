@@ -9,125 +9,68 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-8b5cf6" alt="Python">
   <img src="https://img.shields.io/badge/ChromaDB-vector%20DB-4f8cff" alt="ChromaDB">
-  <img src="https://img.shields.io/badge/status-in%20development-c4b5fd" alt="Status">
+  <img src="https://img.shields.io/badge/RAG-Claude-c4b5fd" alt="RAG with Claude">
   <img src="https://img.shields.io/badge/license-MIT-86e3bf" alt="MIT license">
+  <a href="https://github.com/jmarques-data/knowledge-base-vectorization/actions/workflows/testes.yml"><img src="https://github.com/jmarques-data/knowledge-base-vectorization/actions/workflows/testes.yml/badge.svg" alt="Tests"></a>
 </p>
 
-# Knowledge Base — Data Ingestion & Vectorization Pipeline
+# Knowledge Base: semantic search and RAG for IT support
 
-A Python-based pipeline designed to transform technical documentation and support tickets into searchable vector representations using ChromaDB as a local vector database.
+A Python IT support assistant: it turns technical documentation and tickets into embeddings, stores them in ChromaDB, and answers support questions with **Claude** based on the retrieved chunks, **citing its sources**.
 
-This project explores the foundations of an AI-powered knowledge system: unstructured documents are processed, divided into chunks, converted into embeddings, and stored in a vector database, creating the foundation for future semantic search, RAG, and LLM applications.
+> **Note:** portfolio project. All data in this repository is synthetic and fictional. No real customer data, tickets, or company information is included.
 
-> **Note:** This is a portfolio project. All data included in this repository is synthetic and fictional. No real customer data, tickets, or private company information is included.
+> The code, prompts and sample data are in Brazilian Portuguese, since the assistant targets Brazilian support teams.
 
 ---
 
-## Current Architecture
+## Architecture
 
 ```text
-Markdown Documents
-        ↓
-Document Ingestion
-        ↓
-Text Processing
-        ↓
-Chunking
-        ↓
-Embedding Generation
-        ↓
-ChromaDB
-        ↓
-Vector Storage
+INGESTION (once)                            QUESTION (every ticket)
+
+Markdown documents                          Analyst's question
+        ↓                                           ↓
+Cleaning and sanitization                   Question embedding
+        ↓                                           ↓
+Chunking with overlap                       Semantic search in ChromaDB
+        ↓                                           ↓
+Embeddings (all-MiniLM-L6-v2)               Most relevant chunks
+        ↓                                           ↓
+ChromaDB  ─────────────────────────────→    Prompt with context
+                                                    ↓
+                                            Claude (Anthropic)
+                                                    ↓
+                                            Answer with sources [file#chunk]
 ```
 
-### Currently Implemented
+### What works today
 
-* Markdown document ingestion
-* Text processing and sanitization
-* Document chunking
-* Embedding generation
-* Vector storage using ChromaDB
-* Environment-based path configuration
-* Synthetic technical knowledge dataset
-* Knowledge-base preparation scripts
+* Ingestion, cleaning and chunking of Markdown documents
+* Embedding generation and storage in ChromaDB
+* **Semantic search**: returns the chunks closest to the question
+* **RAG with Claude**: answers using only the retrieved chunks and cites the source of each piece of information
+* **Search-only mode** that works without an API key
+* **Automated tests** (pytest) running on GitHub for every change, without spending API credits
+* Synthetic technical dataset and `.env`-based configuration
 
-### Not Currently Implemented
+### Not implemented yet
 
-* RAG
-* LLM integration
-* PostgreSQL
-* AI agents
-* Conversational interface
-* Semantic retrieval layer
+* Section-aware Markdown chunking (today it splits by character count)
+* PostgreSQL and hybrid search
+* Web interface or conversation memory (each question is independent)
+* Automated answer-quality evaluation
 
 ---
 
 ## Technologies
 
-* **Python** — primary programming language
-* **ChromaDB** — local vector database
-* **ONNX Runtime** — embedding execution
-* **all-MiniLM-L6-v2** — embedding model
-* **python-dotenv** — environment-based configuration
-* **Regular Expressions (`re`)** — text processing and sanitization
-* **Markdown** — knowledge source format
-
----
-
-## How It Works
-
-The pipeline takes Markdown documents containing technical information and transforms them into data that can be stored and later searched semantically.
-
-### 1. Ingestion
-
-Markdown files located under `knowledge/` are discovered and loaded by the pipeline.
-
-### 2. Processing
-
-Documents go through text cleaning and processing steps.
-
-### 3. Chunking
-
-Larger documents are divided into smaller chunks.
-
-The current implementation uses a fixed-character chunking strategy with overlap between consecutive chunks.
-
-```text
-Document
-    ↓
-Chunk 1
-    ↓
-Chunk 2
-    ↓
-Chunk 3
-    ↓
-...
-```
-
-The overlap helps preserve context between consecutive document segments.
-
-### 4. Embeddings
-
-Each chunk is converted into a vector representation using the embedding model.
-
-Conceptually:
-
-```text
-"Database connection error"
-              ↓
-          Embedding
-              ↓
-     [vector representation]
-```
-
-These representations allow the system to compare text based on semantic similarity.
-
-### 5. ChromaDB
-
-The chunks and their corresponding embeddings are stored in ChromaDB.
-
-The vector database is generated locally during execution and is intentionally excluded from the Git repository.
+* **Python**: main language
+* **ChromaDB**: local vector database
+* **all-MiniLM-L6-v2** (via ONNX Runtime): embedding model, runs locally
+* **Claude** (official `anthropic` SDK): answer generation
+* **pytest** + **GitHub Actions**: automated tests
+* **python-dotenv**: environment-based configuration
 
 ---
 
@@ -136,8 +79,16 @@ The vector database is generated locally during execution and is intentionally e
 ```text
 knowledge-base-vectorization/
 │
-├── docs/
-│   └── banner.png
+├── perguntar.py                        # ask questions from the terminal
+│
+├── src/
+│   ├── config.py                       # paths, model and parameters
+│   ├── ingestion/
+│   │   └── vetorizar_base.py           # chunking + embeddings + ChromaDB
+│   ├── retrieval/
+│   │   └── busca.py                    # semantic search
+│   └── rag/
+│       └── assistente.py               # prompt with context + Claude
 │
 ├── knowledge/                          # synthetic source documents
 │   ├── 001_Troubleshooting_SGV_Limpo.md
@@ -149,338 +100,133 @@ knowledge-base-vectorization/
 │   ├── estruturar_dicionario.py        # raw dictionary → structured Markdown
 │   ├── preparar_scripts_sql.py         # adds headers + UTF-8 to SQL scripts
 │   ├── sanitizar_tickets.py            # removes sensitive fields from tickets
-│   └── teste_busca.py                  # quick semantic search test
+│   └── teste_busca.py                  # minimal vector store check
 │
-├── src/
-│   └── ingestion/
-│       └── vetorizar_base.py           # chunking + embeddings + ChromaDB
-│
-├── tests/
+├── tests/                              # tests with a simulated store and Claude
+├── .github/workflows/testes.yml        # runs the tests on GitHub
 ├── .env.example
-├── .gitignore
-├── LICENSE
-├── README.md
-├── README.pt-BR.md
-└── requirements.txt
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 ---
 
 ## Installation
 
-### 1. Clone the repository
-
 ```bash
 git clone https://github.com/jmarques-data/knowledge-base-vectorization.git
 cd knowledge-base-vectorization
+python -m venv venv
 ```
 
-### 2. Create a virtual environment
-
-#### Windows
+Activate the virtual environment:
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate          # Windows
+source venv/bin/activate       # Linux / macOS
 ```
 
-#### Linux / macOS
-
-```bash
-python -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install dependencies
+Install the dependencies and create your `.env`:
 
 ```bash
 pip install -r requirements.txt
+cp .env.example .env           # Linux / macOS  (Windows: copy .env.example .env)
 ```
 
-### 4. Configure environment variables
+### Claude API key (RAG mode only)
 
-Copy `.env.example` to `.env`.
+1. Create a key at [platform.claude.com](https://platform.claude.com).
+2. Paste it into your `.env`, on the `ANTHROPIC_API_KEY=` line.
+3. **Never** put the key in code, in the README or on GitHub. `.env` is already in `.gitignore`.
 
-#### Windows
+Without a key, the project still works in **search-only mode**.
 
-```bash
-copy .env.example .env
-```
-
-#### Linux / macOS
-
-```bash
-cp .env.example .env
-```
-
-Adjust the paths if necessary.
-
----
-
-## Additional Windows Requirement
-
-ChromaDB uses ONNX Runtime for embedding generation.
-
-Depending on the local Windows environment, the following runtime may be required:
-
-**Microsoft Visual C++ Redistributable 2015–2022**
-
-Without the required Visual C++ runtime libraries, ONNX Runtime may fail to load its native DLLs.
-
-This requirement depends on the local environment.
+> **Windows:** ONNX Runtime may need the **Microsoft Visual C++ Redistributable 2015–2022** to load its native DLLs.
 
 ---
 
 ## Usage
 
-### 1. Prepare the documents
-
-Run the preparation scripts:
+### 1. Prepare the documents and build the vector store
 
 ```bash
 python scripts/sanitizar_tickets.py
 python scripts/estruturar_dicionario.py
-python scripts/preparar_scripts_sql.py
-```
-
-The scripts process the synthetic documents located under `knowledge/`.
-
-### 2. Vectorization
-
-Run the main ingestion pipeline:
-
-```bash
 python src/ingestion/vetorizar_base.py
 ```
 
-The pipeline performs:
+The embedding model (about 80 MB) is downloaded on the first run. The `vector_db/` folder is created locally and is not committed.
 
-```text
-Markdown
-   ↓
-Text Processing
-   ↓
-Chunking
-   ↓
-Embeddings
-   ↓
-ChromaDB
-```
-
-A local `vector_db/` directory is generated during execution.
-
-This directory is a generated artifact and is excluded from Git.
-
-### 3. Quick search test
-
-After vectorization, run a sample query against ChromaDB:
+### 2. Ask questions
 
 ```bash
-python scripts/teste_busca.py
+python perguntar.py "Sistema não abre: host remoto não encontrado. O que fazer?"
 ```
 
-The script searches for a sample troubleshooting question and prints the closest chunk, its distance and its metadata. It is a simple validation, not yet a full retrieval layer.
+Other options:
 
----
-
-## Dataset
-
-To prevent exposure of private information, this repository uses only synthetic data.
-
-The examples simulate technical scenarios such as:
-
-* network problems;
-* offline cameras;
-* SSL certificate expiration;
-* firewall blocks;
-* database deadlocks;
-* troubleshooting procedures.
-
-The data was specifically created to demonstrate the pipeline and does not represent real customers or production environments.
-
----
-
-## Security
-
-The public version of the project does not contain:
-
-* real tickets;
-* customer data;
-* internal documentation;
-* credentials;
-* API keys;
-* tokens;
-* production vector databases;
-* proprietary information;
-* personal development-machine paths.
-
-Real data used during development remains outside the public repository.
-
-The `.gitignore` also prevents local artifacts such as `.env`, virtual environments, and `vector_db/` from being committed.
-
----
-
-## Current Limitations
-
-The project is currently in an early development stage.
-
-### Automated Tests
-
-The test directory exists, but a complete automated test suite has not yet been implemented.
-
-### Chunking
-
-The current strategy uses fixed-character chunking.
-
-This works for the demonstration but may split sentences or Markdown structures at unnatural boundaries.
-
-Future implementations may use chunking based on:
-
-* Markdown headers;
-* paragraphs;
-* sections;
-* semantic boundaries;
-* context-aware chunk sizes.
-
-### Semantic Search
-
-The current pipeline generates and stores embeddings but does not yet provide a complete user-facing semantic retrieval layer.
-
-### RAG
-
-Retrieval-Augmented Generation has not yet been implemented.
-
-### LLM
-
-No language model is currently integrated into the project.
-
----
-
-# Roadmap
-
-The long-term goal is to evolve this pipeline into a complete AI-powered knowledge system.
-
-## 1. Semantic Retrieval
-
-Implement a retrieval layer capable of receiving a user query and finding the most relevant chunks from ChromaDB.
-
-```text
-User Query
-    ↓
-Query Embedding
-    ↓
-ChromaDB Search
-    ↓
-Relevant Chunks
+```bash
+python perguntar.py --so-busca "porta 8080 bloqueada"   # chunks only, no Claude call
+python perguntar.py                                     # interactive mode ("sair" exits)
 ```
 
-## 2. RAG Pipeline
+### 3. Run the tests
 
-Introduce a Retrieval-Augmented Generation architecture.
-
-```text
-User Query
-    ↓
-Semantic Search
-    ↓
-Relevant Context
-    ↓
-Prompt Construction
-    ↓
-LLM
-    ↓
-Response
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
 ```
 
-## 3. LLM Integration
+The tests use a **simulated** vector store and Claude: they run offline and without an API key.
 
-Connect the knowledge system to a language model that can generate responses based on retrieved context.
+### Optional settings (`.env`)
 
-Potential providers include:
-
-* OpenAI
-* Anthropic
-* Gemini
-* other compatible models
-
-## 4. Hybrid Database Architecture
-
-Introduce PostgreSQL for structured information while keeping ChromaDB responsible for vector storage and semantic search.
-
-Planned architecture:
-
-```text
-             Knowledge System
-                    │
-          ┌─────────┴─────────┐
-          ↓                   ↓
-     PostgreSQL            ChromaDB
-  Structured Data       Semantic Data
-          │                   │
-          └─────────┬─────────┘
-                    ↓
-             Hybrid Retrieval
-                    ↓
-                   RAG
-                    ↓
-                   LLM
-```
-
-## 5. AI Agent Interface
-
-Create a conversational interface capable of using the knowledge base as a technical assistant.
+| Variable | Default | What it does |
+|---|---|---|
+| `CLAUDE_MODEL` | `claude-opus-5-5` | Model used for answers |
+| `CLAUDE_EFFORT` | `medium` | How much the model thinks: `low`, `medium`, `high`, `xhigh` or `max` |
+| `RAG_TOP_K` | `4` | How many chunks the search sends to Claude |
 
 ---
 
-## Project Goal
+## How the RAG avoids made-up answers
 
-This project is part of my practical study of the integration between:
-
-```text
-Python
-   +
-Data Processing
-   +
-Knowledge Bases
-   +
-Embeddings
-   +
-Vector Databases
-   +
-RAG
-   +
-LLMs
-```
-
-The current implementation represents the foundation of this architecture.
-
-The goal is to evolve the project incrementally, validating each layer before introducing the next one.
+* Claude receives **only the retrieved chunks** and is told to answer only from them.
+* Every piece of information carries the chunk **reference**, e.g. `[001_Troubleshooting_SGV_Limpo.md#1]`, so the analyst can check it.
+* If the knowledge base has no answer, it says so and suggests what to investigate.
+* Document text is treated as **reference data**: instructions written inside it are ignored.
+* If the main model declines a question, the API automatically retries on a fallback model (`fallbacks="default"`).
 
 ---
 
-## Status
+## Dataset and security
 
-**In Development**
+The project uses only **synthetic data** simulating scenarios such as network issues, offline cameras, firewall blocks, full disks and database deadlocks.
 
-### Implemented
+The public repository **does not contain** real tickets, customer data, internal documentation, credentials, API keys, production vector stores or personal paths. `.gitignore` keeps `.env`, virtual environments and `vector_db/` out of Git.
 
-* [x] Markdown ingestion
-* [x] Text processing
-* [x] Chunking
-* [x] Embedding generation
+---
+
+## Current limitations
+
+* **Character-based chunking:** may cut sentences in half. Next step: split by Markdown headings and sections.
+* **Duplicate chunks:** the raw file and the consolidated file share content, so search may return the same text twice.
+* **Small knowledge base:** with few documents, every question gets some chunk, even a loosely related one. Claude is instructed to say when the base has no answer.
+* **No automated evaluation:** there is no set of test questions with expected answers to measure quality yet.
+
+---
+
+## Roadmap
+
+* [x] Ingestion, chunking and embeddings
 * [x] ChromaDB integration
-* [x] Synthetic dataset
-* [x] Environment-based configuration
-
-### Roadmap
-
-* [ ] Semantic retrieval
-* [ ] RAG
-* [ ] LLM integration
-* [ ] PostgreSQL
-* [ ] Hybrid retrieval
-* [ ] AI agent
-* [ ] Automated tests
+* [x] Semantic search
+* [x] RAG with Claude and source citations
+* [x] Automated tests and GitHub Actions
+* [ ] Section-aware chunking and duplicate removal
+* [ ] Answer-quality evaluation (test question set)
+* [ ] PostgreSQL and hybrid search
+* [ ] Conversational interface (web or chat)
 
 ---
 
