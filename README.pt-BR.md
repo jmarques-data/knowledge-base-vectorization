@@ -7,10 +7,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-8b5cf6" alt="Python">
-  <img src="https://img.shields.io/badge/ChromaDB-vector%20DB-4f8cff" alt="ChromaDB">
-  <img src="https://img.shields.io/badge/RAG-Claude-c4b5fd" alt="RAG com Claude">
-  <img src="https://img.shields.io/badge/license-MIT-86e3bf" alt="Licença MIT">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-0131cd" alt="Python">
+  <img src="https://img.shields.io/badge/ChromaDB-vector%20DB-0a1b52" alt="ChromaDB">
+  <img src="https://img.shields.io/badge/RAG-Claude-b9fc01" alt="RAG com Claude">
+  <img src="https://img.shields.io/badge/license-MIT-0a1b52" alt="Licença MIT">
   <a href="https://github.com/jmarques-data/knowledge-base-vectorization/actions/workflows/testes.yml"><img src="https://github.com/jmarques-data/knowledge-base-vectorization/actions/workflows/testes.yml/badge.svg" alt="Testes"></a>
 </p>
 
